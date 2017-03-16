@@ -92,7 +92,7 @@ You may find it useful to see the shape of memory use created by a trace file. R
 
 to see a plot of allocated memory over time for ‹tracefile›.
 
-#Throughput: The average number of operations completed per second
+# Throughput: The average number of operations completed per second
 
 The driver program summarizes the performance of your allocator by computing a performance index, P, which is a weighted sum of space utilization U, instantaneous space utilization Ui, and throughput T relative to a baseline through Tlibc:
 
@@ -103,3 +103,16 @@ The value of Tlibc is 7500K operations/second.
 Observing that both memory and CPU cycles are expensive system resources, this formula encourages balanced optimization of both memory utilization and throughput. Ideally, the performance index will reach 100%. Since each metric will contribute at most a fraction to the performance index, you should not go to extremes to optimize either the memory utilization or the throughput only. To receive a good score, you must achieve a balance between utilization and throughput. Note that the performance index overall favors space utilization over throughput.
 
 An overall P of 0.52 is considered OK, and an overall P of 0.75 is considered excellent.
+
+# Final Tips
+* Start early! It is possible to write an efficient malloc package with a few pages of code. However, an allocator could easily be the most difficult and sophisticated code you have written so far.
+* Use the mdriver -f option. During initial development, using tiny trace files will simplify debugging and testing. We have included two such trace files, "short1-bal.rep" and "short2-bal.rep", that you can use for initial debugging.
+* Use the mdriver -v and -V options. The -v option will give you a detailed summary for each trace file. The -V will also indicate when each trace file is read, which will help you isolate errors.
+* Use the mdriver -l options to warm up the processor and cache before running your functions.
+* Compile with gcc -g and use a debugger. A debugger will help you isolate and identify out of bounds memory references.
+* Understand what was discussed in class and is in the book.
+* Encapsulate your pointer arithmetic in functions or C preprocessor macros. Pointer arithmetic in memory managers is confusing and error-prone because of all the casting that is necessary. You can reduce the complexity significantly by writing macros for your pointer operations. 
+* If you use macros, put each use of a macro argument in parentheses within the macro definition, and always put parentheses around the right-hand side of a macro definition. Otherwise, it’s easy to write macros that parse differently than you expect when the macro is textually expanded.
+* Complete your implementation in stages. Get a basic implementation working, and then modify it to improve performance
+* Use a profiler. You may find the gprof tool helpful for optimizing performance.
+* Keep in mind that mmap (especially) takes time, so you’ll want to make as few calls to mem_map as possible while achieving good utilization.
