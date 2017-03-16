@@ -13,11 +13,11 @@ Honor code:
 # Allocator functions
 
 Your dynamic storage allocator consists of the following three functions, which are declared in "mm.h" and defined in "mm.c":
-'''
+```c
   int   mm_init(void);  
   void *mm_malloc(size_t size);  
   void  mm_free(void *ptr);  
-'''
+```
 The "mm.c" file implements a relatively simple, but still functional, malloc implementation. You will use this as a starting point. You will need to modify these files so that they meet the following requirements: 
 
 * mm_init: Before calling mm_malloc or mm_free, the application program (i.e., the trace-driven driver program that you will use to evaluate your implementation) calls mm_init to perform any necessary initialization, such as allocating the initial heap area. The return value should be -1 if there was a problem in performing the initialization, 0 otherwise.
@@ -43,12 +43,12 @@ The "memlib.c" module provides a thin wrapper on the operating system’s virtua
 
 You can invoke the following functions from memlib.c:
 
-'''size_t mem_pagesize(void);'''
+```size_t mem_pagesize(void);```
 
 Returns the miminum granularity of allocation via mem_map and deallocation via mem_unmap.
 You can assume that the allocation granularity is a power of 2 and at least 4096.
 
-'''void *mem_map(size_t amt);'''
+```void *mem_map(size_t amt);```
 
 Returns a pointer to the start of a group of newly allocated, contiguous pages that occupy exactly *amt* bytes.
 
@@ -56,13 +56,13 @@ The given *amt* must be a multiple of the value produced by mem_pagesize, and th
 
 The result is NULL if memory cannot be allocated.
 
-'''void mem_unmap(void *addr, size_t amt);'''
+```void mem_unmap(void *addr, size_t amt);```
 
 Releases back to the operating system a group of contiguous pages that start at *addr* and covers exactly *amt* bytes.
 
 The given *addr* must be page-aligned (i.e., it must be a multiple of the value produced by mem_pagesize), and *amt* must be a multiple of the value produced by mem_pagesize. The given *addr* must also identify pages formerly allocated with mem_map and since released by mem_unmap. A single mem_unmap can release pages allocated by multiple previous mem_map calls, and multiple different mem_unmap calls can release pages allocated by a single mem_map call—as long as each individual page’s allocation is balanced by exactly one deallocation.
 
-'''size_t mem_heapsize(void);'''
+```size_t mem_heapsize(void);```
 
 Returns the total size of all currently allocated pages (i.e., mapped and not yet freed).
 
@@ -88,7 +88,7 @@ The provided makefile combines "mdriver.c" with your "mm.c" to create mdriver, w
 
 You may find it useful to see the shape of memory use created by a trace file. Run
 
-  '''$ racket plot.rkt ‹tracefile›'''
+  ```$ racket plot.rkt ‹tracefile›```
 
 to see a plot of allocated memory over time for ‹tracefile›.
 
@@ -96,7 +96,7 @@ to see a plot of allocated memory over time for ‹tracefile›.
 
 The driver program summarizes the performance of your allocator by computing a performance index, P, which is a weighted sum of space utilization U, instantaneous space utilization Ui, and throughput T relative to a baseline through Tlibc:
 
-'''P = 0.3U + 0.3Ui + 0.4T/Tlibc'''
+```P = 0.3U + 0.3Ui + 0.4T/Tlibc```
 
 The value of Tlibc is 7500K operations/second. 
 
