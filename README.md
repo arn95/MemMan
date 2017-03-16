@@ -2,7 +2,7 @@
 
 This file provides information on what is required for your code, as well as how to use the provided framework.
 
-#Information provided by the student
+# Information provided by the student
 
 What works:
 
@@ -10,7 +10,7 @@ What doesn't work:
 
 Honor code:
 
-#Allocator functions
+# Allocator functions
 
 Your dynamic storage allocator consists of the following three functions, which are declared in "mm.h" and defined in "mm.c":
 '''
@@ -38,7 +38,7 @@ The test driver will compare your implementation to the version of malloc suppli
 
 You can use the make file to compile your code. See information below on the driver program for how to run your program.
 
-#Support Functions
+# Support Functions
 The "memlib.c" module provides a thin wrapper on the operating system’s virtual-memory system. Your allocator will need to use these functions to obtain pages of memory from which it can allocate memory. When mdriver runs your allocator, it resets the memory system (i.e., frees all pages) before calling mm_init to start a new benchmark run.
 
 You can invoke the following functions from memlib.c:
@@ -68,7 +68,7 @@ Returns the total size of all currently allocated pages (i.e., mapped and not ye
 
 While your allocator will obviously need to call mem_map to obtain memory for allocation, space-efficiency for this assignment also means using mem_unmap to avoid retaining pages that are not needed as allocated blocks are freed.
 
-#Trace-based Driver Program
+# Trace-based Driver Program
 
 The driver program "mdriver.c" tests your "mm.c" implementation for correctness, space utilization, and throughput. The driver program is controlled by a set of trace files that are included in your repository. Each trace file contains a sequence of allocate, free, and reallocate (i.e., allocate plus free) directions that instruct the driver to call your mm_malloc and mm_free functions in some sequence. The driver and the trace files are the same ones used for grading, although there may be slight modifications.
 
