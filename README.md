@@ -26,7 +26,7 @@ The "mm.c" file implements a relatively simple, but still functional, malloc imp
 
 * mm_free: The mm_free function frees the block pointed to by ptr. It returns nothing. This routine is only guaranteed to work when the passed pointer (ptr) was returned by an earlier call to mm_malloc and has not yet been freed.
 
-These semantics match the corresponding libc malloc and free functions.
+These semantics match the corresponding libc malloc and free functions. Note that your code starts with an implementation in mm_malloc that is super basic and does not support later freeing the memory. Use this code to get a feel for how the framework works, such as why ALIGN and PAGE_ALIGN are necessary, as well as how to call mem_map. You will be replacing most of the code in this function as you write your improved solution.
 
 ## Beyond Correctness
 Beyond correctness, your goal is to produce an allocator that performs well in time and space. The mm_malloc and mm_free functions should work as quickly as possible, and the total amount of memory used by your allocator should stay as close as possible to the amount of memory needed to hold the payload of mm_malloc calls not yet balanced by mm_free calls.
