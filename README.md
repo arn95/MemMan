@@ -86,6 +86,8 @@ The provided makefile combines "mdriver.c" with your "mm.c" to create mdriver, w
 
 * -V — More verbose output, printing additional diagnostic information as each trace file is processed. This flags is useful during debugging to determine which trace file is causing your malloc implementation to fail.
 
+I recommend starting with the "trivial" trace. Then try with the short traces before trying more complicated ones.
+
 ## Throughput: The average number of operations completed per second
 
 The driver program summarizes the performance of your allocator by computing a performance index, P, which is a weighted sum of space utilization U, instantaneous space utilization Ui, and throughput T relative to a baseline through Tlibc:
