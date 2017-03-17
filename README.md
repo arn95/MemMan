@@ -86,13 +86,7 @@ The provided makefile combines "mdriver.c" with your "mm.c" to create mdriver, w
 
 * -V — More verbose output, printing additional diagnostic information as each trace file is processed. This flags is useful during debugging to determine which trace file is causing your malloc implementation to fail.
 
-You may find it useful to see the shape of memory use created by a trace file. Run
-
-  ```$ racket plot.rkt ‹tracefile›```
-
-to see a plot of allocated memory over time for ‹tracefile›.
-
-# Throughput: The average number of operations completed per second
+## Throughput: The average number of operations completed per second
 
 The driver program summarizes the performance of your allocator by computing a performance index, P, which is a weighted sum of space utilization U, instantaneous space utilization Ui, and throughput T relative to a baseline through Tlibc:
 
@@ -111,8 +105,7 @@ An overall P of 0.52 is considered OK, and an overall P of 0.75 is considered ex
 * Use the mdriver -l options to warm up the processor and cache before running your functions.
 * Compile with gcc -g and use a debugger. A debugger will help you isolate and identify out of bounds memory references.
 * Understand what was discussed in class and is in the book.
-* Encapsulate your pointer arithmetic in functions or C preprocessor macros. Pointer arithmetic in memory managers is confusing and error-prone because of all the casting that is necessary. You can reduce the complexity significantly by writing macros for your pointer operations. 
-* If you use macros, put each use of a macro argument in parentheses within the macro definition, and always put parentheses around the right-hand side of a macro definition. Otherwise, it’s easy to write macros that parse differently than you expect when the macro is textually expanded.
-* Complete your implementation in stages. Get a basic implementation working, and then modify it to improve performance
+* Encapsulate your pointer arithmetic in functions or C preprocessor macros. Pointer arithmetic in memory managers is confusing and error-prone because of all the casting that is necessary. You can reduce the complexity significantly by writing a function that you call whenever pointer math is necessary. 
+* Complete your implementation in stages. Get a basic implementation working, and then modify it to improve performance or add functionality.
 * Use a profiler. You may find the gprof tool helpful for optimizing performance.
 * Keep in mind that mmap (especially) takes time, so you’ll want to make as few calls to mem_map as possible while achieving good utilization.
