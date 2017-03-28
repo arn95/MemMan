@@ -92,7 +92,8 @@ void *mm_malloc(size_t size)
         return ((void*)block+HEAD_SIZE);
 
     } else {
-        Header block = find_block(asize);
+        void* who_points = NULL;
+        Header block = find_block(&who_points,asize);
 
         if (block == NULL) { // No block big enough to fit
             block = new_block(pasize);
@@ -104,23 +105,38 @@ void *mm_malloc(size_t size)
                 remainder->next = FreeList.head;
                 FreeList.head = remainder;
                 FreeList.size++;
+                //merge();
             }
             return  ((void*)block+HEAD_SIZE);
         } else { // Found block that can fit
             Header remainder = split(block, block->size, asize);
             if (remainder != NULL){
-                if (FreeList.size == 1){
+                if ((void*)block == (void*)FreeList.head){
                     FreeList.head = remainder;
                 } else {
+                    list_remove_used();
                     remainder->next = FreeList.head;
                     FreeList.head = remainder;
-                    FreeList.size++;
                 }
             }
             return ((void*)block+HEAD_SIZE);
         }
     }
+}
 
+void list_remove_used(){
+    Header prev = NULL;
+    Header curr = FreeList.head;
+    while (curr != NULL){
+
+        if (curr->magic_number == 123456){
+            prev->next = NULL;
+            break;
+        }
+
+        prev = curr;
+        curr = curr->next;
+    }
 }
 
 void merge(){
@@ -142,13 +158,18 @@ void merge(){
     }
 }
 
-Header find_block(size_t asize){
+Header find_block(void** who_points, size_t asize){
     Header curr = FreeList.head;
     Header prev = NULL;
+    Header prev_prev = NULL;
+
     while (curr != NULL && curr->size >= asize) {
+
+        prev_prev = prev;
         prev = curr;
         curr = curr->next;
     }
+    *who_points = prev_prev;
     return prev;
 }
 
@@ -193,22 +214,22 @@ void mm_free(void* ptr)
      * mem_unmap() from driver/memlib.c to return it to the OS.
      */
 
-    if (ptr == NULL) {
-        return;
-    }
-
-    Header ptr_h = ptr-HEAD_SIZE;
-    if (ptr_h == NULL)
-        return;
-
-    if (ptr_h->magic_number == 123456){
-        size_t size = ptr_h->size;
-        size_t asize = ALIGN(size);
-        mem_unmap(ptr, asize);
-        merge();
-    } else {
-        return;
-    }
+//    if (ptr == NULL) {
+//        return;
+//    }
+//
+//    Header ptr_h = ptr-HEAD_SIZE;
+//    if (ptr_h == NULL)
+//        return;
+//
+//    if (ptr_h->magic_number == 123456){
+//        size_t size = ptr_h->size;
+//        size_t asize = ALIGN(size);
+//        mem_unmap(ptr, asize);
+//        merge();
+//    } else {
+//        return;
+//    }
 }
 //
 //int main(int argc, char* args[]){
