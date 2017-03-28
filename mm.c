@@ -58,6 +58,8 @@ int mm_init(void)
 {
     // no pages allocated yet.
     FreeList.head = NULL;
+
+    return 0;
 }
 
 /*
@@ -81,7 +83,7 @@ void *mm_malloc(size_t size)
             return NULL;
         }
 
-        int status = NULL;
+        int status = 0;
         Header remainder = split(block, pasize,asize,&status, NULL);
         if (status == FREE_SPACE_REMAINING) {
             FreeList.head = remainder;
@@ -98,30 +100,26 @@ void *mm_malloc(size_t size)
             if (block == NULL) {
                 return NULL;
             }
-            int status = NULL;
+            int status = 0;
             void* points_where = NULL;
             Header remainder = split(block, pasize, asize, &status, &points_where);
             if (status == FREE_SPACE_REMAINING){
                 remainder->next = FreeList.head;
                 FreeList.head = remainder;
-            } else if (status == ALL_FREE_SPACE_FILLED){
-                //do nothing. free space is not added anywhere. memory is requested and used immediately. nothing remains
             }
             return  ((void*)block+HEAD_SIZE);
         } else { // Found block that can fit
 
-            int status = NULL;
+            int status = 0;
             void* points_where = NULL;
             Header remainder = split(block, block->size, asize, &status, &points_where);
             if (status == FREE_SPACE_REMAINING){
                 if (who_points != NULL) {
                     ((Header)who_points)->next = remainder;
+                } else {
+                    FreeList.head = remainder;
                 }
                 remainder->next = ((Header)points_where);
-//                if (who_points == NULL && points_where == NULL)
-//                    FreeList.head = remainder;
-                if (who_points == NULL)
-                    FreeList.head = remainder;
             } else if (status == ALL_FREE_SPACE_FILLED){
                 if (who_points != NULL){
                     ((Header)who_points)->next = ((Header)points_where);
