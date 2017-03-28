@@ -12,6 +12,7 @@ void* alloc_pages(size_t pasize);
 Header split(void*, size_t , size_t, int*, void**);
 Header new_block(size_t);
 Header find_block(void**, size_t);
-void merge();
+Header merge(Header, Header);
+void merge_terse();
 void list_remove_used();
 

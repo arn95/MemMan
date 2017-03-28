@@ -133,36 +133,87 @@ void *mm_malloc(size_t size)
     }
 }
 
-void list_remove_used(){
-    Header prev = NULL;
-    Header curr = FreeList.head;
-    while (curr != NULL){
+Header merge(Header h1, Header h2){
 
-        if (curr->magic_number == 123456){
-            prev->next = NULL;
-            break;
-        }
+    Header merged = NULL;
 
-        prev = curr;
-        curr = curr->next;
+    if (h1 == NULL || h2 == NULL)
+        return NULL;
+
+    if ( ((void*)h1+h1->size) == h2 ) {
+        merged = h1;
+        merged->size = h1->size + h2->size;
     }
+
+    return merged;
 }
 
-void merge(){
+Header merge_connect(Header prev, Header curr, Header prev_other, Header other){
+    Header merged = NULL;
+    merged = merge(curr, other);
+    if (merged != NULL){
+        if (prev == NULL){
+            if (prev_other == NULL){
+                FreeList.head = merged;
+                merged->next = other->next;
+            } else {
+                prev_other->next = other->next;
+            }
+        } else {
+            if (prev_other == NULL){
+                merged->next = other->next;
+            } else {
+                prev_other->next = other->next;
+            }
+        }
+    }
+    merged = merge(other, curr);
+    if (merged != NULL){
+        if (prev == NULL){
+            if (prev_other == NULL){
+                FreeList.head = merged;
+            } else {
+                FreeList.head = curr->next;
+                merged->next = other->next;
+            }
+        } else {
+            if (prev_other == NULL){
+                if (other->next == NULL){
+                    prev->next = merged;
+                } else {
+                    prev->next = merged;
+                    merged->next = other->next;
+                }
+            } else {
+                prev->next = curr->next;
+            }
+        }
+    }
+    return merged;
+}
 
-    Header prev = NULL;
+void merge_terse(){
     Header curr = FreeList.head;
+    Header prev = NULL;
+    Header other = NULL;
+    Header prev_other = NULL;
 
-    while(curr != NULL){
+    if (curr == NULL)
+        return;
 
-        if (prev != NULL && ( (prev+prev->size) == curr)) {
-            Header merged = prev;
-            merged->size = prev->size + curr->size;
-            merged->next = curr->next;
+    while (curr->next != NULL){
+        other = curr->next;
+        while (other != NULL){
+
+            merge_connect(prev, curr, prev_other, other);
+
+            prev_other = other;
+            other = other->next;
         }
 
         prev = curr;
         curr = curr->next;
+        prev_other = NULL;
     }
 }
 
@@ -224,6 +275,10 @@ void* alloc_pages(size_t pasize){
     return alloc_mem;
 }
 
+void dealloc_pages(){
+    
+}
+
 /*
  * mm_free - Freeing a block does nothing.
  */
@@ -233,25 +288,19 @@ void mm_free(void* ptr)
      * mem_unmap() from driver/memlib.c to return it to the OS.
      */
 
-//    if (ptr == NULL) {
-//        return;
-//    }
-//
-//    Header ptr_h = ptr-HEAD_SIZE;
-//    if (ptr_h == NULL)
-//        return;
-//
-//    if (ptr_h->magic_number == 123456){
-//        size_t size = ptr_h->size;
-//        size_t asize = ALIGN(size);
-//        mem_unmap(ptr, asize);
-//        merge();
-//    } else {
-//        return;
-//    }
+    if (ptr == NULL) {
+        return;
+    }
+
+    Header ptr_h = ptr-HEAD_SIZE;
+    if (ptr_h == NULL)
+        return;
+
+    if (ptr_h->magic_number == 123456){
+        ptr_h->next = FreeList.head;
+        FreeList.head = ptr_h;
+        merge_terse();
+    } else {
+        return;
+    }
 }
-//
-//int main(int argc, char* args[]){
-//    mem_init();
-//    mm_malloc(10);
-//}
