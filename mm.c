@@ -43,13 +43,12 @@ struct header {
  * These are for the naive solution, you can replace them
  * with your own. */
 
-const int NO_FREE_SPACE = 23;
-const int ALL_FREE_SPACE_FILLED = 85;
-const int FREE_SPACE_REMAINING = 33;
+const int NO_FREE_SPACE = 33;
+const int ALL_FREE_SPACE_FILLED = 22;
+const int FREE_SPACE_REMAINING = 11;
 
 struct free_list_s {
     Header head;
-    size_t size;
 } FreeList;
 
 /*
@@ -59,7 +58,6 @@ int mm_init(void)
 {
     // no pages allocated yet.
     FreeList.head = NULL;
-    FreeList.size = 0;
 }
 
 /*
@@ -83,10 +81,10 @@ void *mm_malloc(size_t size)
             return NULL;
         }
 
-        Header remainder = split(block, pasize,asize);
-        if (remainder != NULL) {
+        int status = NULL;
+        Header remainder = split(block, pasize,asize,&status, NULL);
+        if (status == FREE_SPACE_REMAINING) {
             FreeList.head = remainder;
-            FreeList.size++;
         }
 
         return ((void*)block+HEAD_SIZE);
@@ -100,25 +98,38 @@ void *mm_malloc(size_t size)
             if (block == NULL) {
                 return NULL;
             }
-            Header remainder = split(block, pasize, asize);
-            if (remainder != NULL){
+            int status = NULL;
+            void* points_where = NULL;
+            Header remainder = split(block, pasize, asize, &status, &points_where);
+            if (status == FREE_SPACE_REMAINING){
                 remainder->next = FreeList.head;
                 FreeList.head = remainder;
-                FreeList.size++;
-                //merge();
+            } else if (status == ALL_FREE_SPACE_FILLED){
+                //do nothing. free space is not added anywhere. memory is requested and used immediately. nothing remains
             }
             return  ((void*)block+HEAD_SIZE);
         } else { // Found block that can fit
-            Header remainder = split(block, block->size, asize);
-            if (remainder != NULL){
-                if ((void*)block == (void*)FreeList.head){
+
+            int status = NULL;
+            void* points_where = NULL;
+            Header remainder = split(block, block->size, asize, &status, &points_where);
+            if (status == FREE_SPACE_REMAINING){
+                if (who_points != NULL) {
+                    ((Header)who_points)->next = remainder;
+                }
+                remainder->next = ((Header)points_where);
+//                if (who_points == NULL && points_where == NULL)
+//                    FreeList.head = remainder;
+                if (who_points == NULL)
                     FreeList.head = remainder;
+            } else if (status == ALL_FREE_SPACE_FILLED){
+                if (who_points != NULL){
+                    ((Header)who_points)->next = ((Header)points_where);
                 } else {
-                    list_remove_used();
-                    remainder->next = FreeList.head;
-                    FreeList.head = remainder;
+                    FreeList.head = ((Header)points_where);
                 }
             }
+
             return ((void*)block+HEAD_SIZE);
         }
     }
@@ -150,7 +161,6 @@ void merge(){
             Header merged = prev;
             merged->size = prev->size + curr->size;
             merged->next = curr->next;
-            FreeList.size--;
         }
 
         prev = curr;
@@ -161,16 +171,21 @@ void merge(){
 Header find_block(void** who_points, size_t asize){
     Header curr = FreeList.head;
     Header prev = NULL;
-    Header prev_prev = NULL;
 
-    while (curr != NULL && curr->size >= asize) {
+    if (FreeList.head == NULL)
+        return NULL;
 
-        prev_prev = prev;
+    while (curr->next != NULL) {
+        if (curr->size >= asize)
+            return curr;
         prev = curr;
         curr = curr->next;
     }
-    *who_points = prev_prev;
-    return prev;
+    *who_points = prev;
+    if (curr->size >= asize)
+        return curr;
+    else
+        return NULL;
 }
 
 Header new_block(size_t pasize){
@@ -184,10 +199,12 @@ Header new_block(size_t pasize){
     return h;
 }
 
-Header split(void* origin, size_t origin_size, size_t asize){
+Header split(void* origin, size_t origin_size, size_t asize, int* status, void** points_where){
 
     Header remainder = NULL;
     Header origin_mod = origin;
+    if (points_where != NULL)
+        *points_where = origin_mod->next;
     origin_mod->size = asize-HEAD_SIZE;
     origin_mod->magic_number = 123456;
 
@@ -195,7 +212,11 @@ Header split(void* origin, size_t origin_size, size_t asize){
         remainder = origin + asize;
         remainder->size = origin_size-asize;
         remainder->next = NULL;
-    }
+        *status = FREE_SPACE_REMAINING;
+    } else if (origin_size-asize == 0)
+        *status = ALL_FREE_SPACE_FILLED;
+    else
+        *status = NO_FREE_SPACE;
 
     return remainder;
 }
