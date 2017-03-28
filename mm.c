@@ -48,7 +48,8 @@ const int ALL_FREE_SPACE_FILLED = 85;
 const int FREE_SPACE_REMAINING = 33;
 
 struct free_list_s {
-    struct header* head;
+    Header head;
+    size_t size;
 } FreeList;
 
 /*
@@ -58,6 +59,7 @@ int mm_init(void)
 {
     // no pages allocated yet.
     FreeList.head = NULL;
+    FreeList.size = 0;
 }
 
 /*
@@ -67,198 +69,117 @@ int mm_init(void)
 void *mm_malloc(size_t size)
 {
 
-    size_t asize = ALIGN(size+HEAD_SIZE); //allocation needed
+    size_t asize = ALIGN(size+HEAD_SIZE); //allocation needed 
     size_t pasize = PAGE_ALIGN(asize); //page allocation given
 
-    //for the first page
-    if (FreeList.head == NULL){
-
-        void* alloc_mem = alloc_page(pasize);
-
-        if (alloc_mem == NULL)
-            return NULL;
-
-        struct header* space = alloc_mem;
-        space->size = pasize;
-        space->next = NULL;
-
-        struct header* used_space = space;
-        used_space->size = size;
-        used_space->magic_number = 123456;
-
-        struct header* free_space = space + HEAD_SIZE + size;
-        free_space->size = pasize-size-HEAD_SIZE;
-        free_space->next = NULL;
-
-        FreeList.head = free_space;
-
-        return (used_space+HEAD_SIZE);
-
-    } else {
-
-        //look up free space
-
-        struct header* prev_header = NULL;
-        struct header* current_header = FreeList.head;
-        struct header* next_header = FreeList.head->next;
-
-        int space_found = 0;
-
-        while (current_header != NULL){
-
-            int status;
-            struct header* mem_free = try_occupy(current_header, size, asize, &status);
-
-            switch(status){
-                case FREE_SPACE_REMAINING : {
-
-                    if (prev_header != NULL)
-                        prev_header->next = mem_free;
-                    else
-                        FreeList.head = mem_free;
-
-                    mem_free->next = next_header;
-
-                    space_found = 1;
-
-                } break;
-                case NO_FREE_SPACE: {
-
-                    // let the loop go to check another node for free space
-                    space_found = 0;
-
-
-                } break;
-                case ALL_FREE_SPACE_FILLED: {
-
-                    if (prev_header != NULL)
-                        prev_header->next = next_header;
-                    else
-                        FreeList.head = next_header;
-
-                    space_found = 1;
-
-                } break;
-                default: {
-
-                }
-            }
-
-            if (space_found == 1) {
-                break;
-            }
-
-            prev_header = current_header;
-            current_header = current_header->next;
-            if (current_header != NULL)
-                next_header = current_header->next;
-        }
-
-        if (space_found == 1)
-            return current_header;
-        else {
-            // we need to alloc a new page
-
-            void* alloc_mem = alloc_page(pasize);
-
-            if (alloc_mem == NULL)
-                return NULL;
-
-            struct header* space = alloc_mem;
-            space->size = pasize;
-            space->next = NULL;
-
-            struct header* used_space = space;
-            used_space->size = size;
-            used_space->magic_number = 123456;
-
-            struct header* free_space = space+HEAD_SIZE+size;
-            free_space->size = pasize-size-HEAD_SIZE;
-            free_space->next = FreeList.head;
-
-            FreeList.head = free_space;
-
-            return (used_space+HEAD_SIZE);
-        }
-
-    }
-}
-
-void* try_merge(void* mem1, void* mem2){
-
-    struct header* h1 = mem1;
-    struct header* h2 = mem2;
-
-    if ((h1+h1->size) == h2){
-        struct header* merged = h1;
-        merged->size = (h1->size + h2->size);
-
-        //connect the chunk with the rest of the list
-        merged->next = h2->next;
-
-        return merged;
-    } else {
+    if (size <= 0) {
         return NULL;
     }
-}
 
-void* try_occupy(void* mem, size_t size, size_t asize, int* status){
+    if (FreeList.head == NULL) {
+        Header block = new_block(pasize);
 
-    struct header* space = mem;
-    size_t free_before = space->size;
+        if (block == NULL) {
+            return NULL;
+        }
 
-    if (free_before < size){
+        Header remainder = split(block, pasize,asize);
+        if (remainder != NULL) {
+            FreeList.head = remainder;
+            FreeList.size++;
+        }
 
-        *status = NO_FREE_SPACE;
-        return NULL; // not enough free space to occupy
-
-    } else if (free_before == size) {
-
-        struct header* to_use = mem;
-        to_use->size = free_before;
-        to_use->next = NULL;
-
-        struct header* used_space = to_use;
-        used_space->size = size;
-        used_space->magic_number = 123456;
-
-        mem = (used_space+HEAD_SIZE);
-
-        *status = ALL_FREE_SPACE_FILLED;
-        return NULL; // fits exactly so no free space left
+        return ((void*)block+HEAD_SIZE);
 
     } else {
+        Header block = find_block(asize);
 
-        struct header* to_use = mem;
-        to_use->size = free_before;
-        to_use->next = NULL;
+        if (block == NULL) { // No block big enough to fit
+            block = new_block(pasize);
+            if (block == NULL) {
+                return NULL;
+            }
+            Header remainder = split(block, pasize, asize);
+            if (remainder != NULL){
+                remainder->next = FreeList.head;
+                FreeList.head = remainder;
+                FreeList.size++;
+            }
+            return  ((void*)block+HEAD_SIZE);
+        } else { // Found block that can fit
+            Header remainder = split(block, block->size, asize);
+            if (remainder != NULL){
+                if (FreeList.size == 1){
+                    FreeList.head = remainder;
+                } else {
+                    remainder->next = FreeList.head;
+                    FreeList.head = remainder;
+                    FreeList.size++;
+                }
+            }
+            return ((void*)block+HEAD_SIZE);
+        }
+    }
 
-        struct header* used_space = to_use;
-        used_space->size = size;
-        used_space->magic_number = 123456;
+}
 
-        mem = (used_space+HEAD_SIZE);
+void merge(){
 
-        struct header* free_space = used_space+HEAD_SIZE+size;
-        free_space->size = free_before-size-HEAD_SIZE;
+    Header prev = NULL;
+    Header curr = FreeList.head;
 
-        *status = FREE_SPACE_REMAINING;
-        return free_space; // free space left after filling
+    while(curr != NULL){
 
+        if (prev != NULL && ( (prev+prev->size) == curr)) {
+            Header merged = prev;
+            merged->size = prev->size + curr->size;
+            merged->next = curr->next;
+            FreeList.size--;
+        }
+
+        prev = curr;
+        curr = curr->next;
     }
 }
 
-int is_used(void* mem){
-    struct header* mem1 = mem;
-    if (mem == NULL)
-        return -1;
-    if (mem1->magic_number == 123456)
-        return 1;
-    else
-        return 0;
+Header find_block(size_t asize){
+    Header curr = FreeList.head;
+    Header prev = NULL;
+    while (curr != NULL && curr->size >= asize) {
+        prev = curr;
+        curr = curr->next;
+    }
+    return prev;
 }
 
-void* alloc_page(size_t pasize){
+Header new_block(size_t pasize){
+
+    void* mem = alloc_pages(pasize);
+    if (mem == NULL)
+        return NULL;
+    Header h = mem;
+    h->size = pasize;
+    h->next = NULL;
+    return h;
+}
+
+Header split(void* origin, size_t origin_size, size_t asize){
+
+    Header remainder = NULL;
+    Header origin_mod = origin;
+    origin_mod->size = asize-HEAD_SIZE;
+    origin_mod->magic_number = 123456;
+
+    if (origin_size-asize > 0){
+        remainder = origin + asize;
+        remainder->size = origin_size-asize;
+        remainder->next = NULL;
+    }
+
+    return remainder;
+}
+
+void* alloc_pages(size_t pasize){
     void* alloc_mem = mem_map(pasize);
     return alloc_mem;
 }
@@ -266,11 +187,28 @@ void* alloc_page(size_t pasize){
 /*
  * mm_free - Freeing a block does nothing.
  */
-void mm_free(void *ptr)
+void mm_free(void* ptr)
 {
     /* You must implement this. If a page is completely free, use
      * mem_unmap() from driver/memlib.c to return it to the OS.
      */
+
+    if (ptr == NULL) {
+        return;
+    }
+
+    Header ptr_h = ptr-HEAD_SIZE;
+    if (ptr_h == NULL)
+        return;
+
+    if (ptr_h->magic_number == 123456){
+        size_t size = ptr_h->size;
+        size_t asize = ALIGN(size);
+        mem_unmap(ptr, asize);
+        merge();
+    } else {
+        return;
+    }
 }
 //
 //int main(int argc, char* args[]){

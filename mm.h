@@ -6,8 +6,11 @@ extern void mm_free (void *ptr);
 
 // Custom func
 
-void* alloc_page(size_t);
-void* split(void*, size_t);
-void* try_merge(void*, void*);
-int is_used(void*);
-void* try_occupy(void*, size_t, size_t, int*);
+typedef struct header* Header;
+
+void* alloc_pages(size_t pasize);
+Header split(void*, size_t , size_t);
+Header new_block(size_t);
+Header find_block(size_t);
+void merge();
+
