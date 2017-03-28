@@ -27,6 +27,9 @@
 /* rounds up to the nearest multiple of mem_pagesize() */
 #define PAGE_ALIGN(size) (((size) + (mem_pagesize()-1)) & ~(mem_pagesize()-1))
 
+#define LOG_APAGE_SIZE 12
+#define APAGE_SIZE (1 << LOG_APAGE_SIZE)
+
 /* Use this structure to represent a free or used block.
  * This is not currently used by the naive solution, but you
  * should use it in yours. */
@@ -276,7 +279,32 @@ void* alloc_pages(size_t pasize){
 }
 
 void dealloc_pages(){
-    
+    Header prev = NULL;
+    Header curr = FreeList.head;
+
+    if (curr == NULL)
+        return;
+
+    while (curr != NULL){
+
+        if ( !(((uintptr_t)curr) & (APAGE_SIZE - 1)) && !( (curr->size+HEAD_SIZE) & (APAGE_SIZE - 1)) ){
+            if (prev != NULL) {
+                prev->next = curr->next;
+            } else {
+                FreeList.head = curr->next;
+            }
+
+            mem_unmap(curr, (curr->size+HEAD_SIZE));
+
+            if (prev == NULL){
+                curr = FreeList.head;
+                continue;
+            }
+        }
+
+        prev = curr;
+        curr = curr->next;
+    }
 }
 
 /*
@@ -300,6 +328,7 @@ void mm_free(void* ptr)
         ptr_h->next = FreeList.head;
         FreeList.head = ptr_h;
         merge_terse();
+        dealloc_pages();
     } else {
         return;
     }

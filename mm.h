@@ -14,5 +14,5 @@ Header new_block(size_t);
 Header find_block(void**, size_t);
 Header merge(Header, Header);
 void merge_terse();
-void list_remove_used();
+void dealloc_pages();
 
