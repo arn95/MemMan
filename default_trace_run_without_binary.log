@@ -1,0 +1,106 @@
+-----------------------------------------------
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: ./traces/amptjp-bal.rep
+Checking mm_malloc for correctness, efficiency, and performance.
+
+Results for mm malloc:
+trace  valid  util util_i    ops      secs  Kops
+ 0       yes   97%   58%    5694  0.283185    20
+Total          97%   58%    5694  0.283185    20
+
+Perf index = 29 (util) + 17 (util_i) + 0 (thru) = 46/100
+correct:1
+perfidx:46
+-----------------------------------------------
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: ./traces/cccp-bal.rep
+Checking mm_malloc for correctness, efficiency, and performance.
+
+Results for mm malloc:
+trace  valid  util util_i    ops      secs  Kops
+ 0       yes   97%   46%    5848  0.229887    25
+Total          97%   46%    5848  0.229887    25
+
+Perf index = 29 (util) + 14 (util_i) + 0 (thru) = 43/100
+correct:1
+perfidx:43
+-----------------------------------------------
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: ./traces/cp-decl-bal.rep
+Checking mm_malloc for correctness, efficiency, and performance.
+
+Results for mm malloc:
+trace  valid  util util_i    ops      secs  Kops
+ 0       yes   97%   75%    6648  0.401591    17
+Total          97%   75%    6648  0.401591    17
+
+Perf index = 29 (util) + 22 (util_i) + 0 (thru) = 51/100
+correct:1
+perfidx:51
+-----------------------------------------------
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: ./traces/expr-bal.rep
+Checking mm_malloc for correctness, efficiency, and performance.
+
+Results for mm malloc:
+trace  valid  util util_i    ops      secs  Kops
+ 0       yes   97%   74%    5380  0.285671    19
+Total          97%   74%    5380  0.285671    19
+
+Perf index = 29 (util) + 22 (util_i) + 0 (thru) = 52/100
+correct:1
+perfidx:52
+-----------------------------------------------
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: ./traces/coalescing-bal.rep
+Checking mm_malloc for correctness, efficiency, and performance.
+
+Results for mm malloc:
+trace  valid  util util_i    ops      secs  Kops
+ 0       yes   57%   36%   14402  0.034036   423
+Total          57%   36%   14402  0.034036   423
+
+Perf index = 17 (util) + 11 (util_i) + 2 (thru) = 30/100
+correct:1
+perfidx:30
+-----------------------------------------------
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: ./traces/random-bal.rep
+Checking mm_malloc for correctness, efficiency, and performance.
+
+Results for mm malloc:
+trace  valid  util util_i    ops      secs  Kops
+ 0       yes   89%   69%    4800  3.903657     1
+Total          89%   69%    4800  3.903657     1
+
+Perf index = 27 (util) + 21 (util_i) + 0 (thru) = 48/100
+correct:1
+perfidx:48
+-----------------------------------------------
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: ./traces/random2-bal.rep
+Checking mm_malloc for correctness, efficiency, and performance.
+
+Results for mm malloc:
+trace  valid  util util_i    ops      secs  Kops
+ 0       yes   90%   44%    4800  3.862590     1
+Total          90%   44%    4800  3.862590     1
+
+Perf index = 27 (util) + 13 (util_i) + 0 (thru) = 40/100
+correct:1
+perfidx:40
+-----------------------------------------------

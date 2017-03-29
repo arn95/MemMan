@@ -4,11 +4,14 @@ This file provides information on what is required for your code, as well as how
 
 # Information provided by the student
 
-What works:
+What works: Everything seems to work. On my laptop binary-bal.rep and binary2-bal.rep run really slow. They finish but insanely slow.
+I waited for like 2 hours for them to finish. I have no idea why. All other traces work fine.
 
-What doesn't work:
+What doesn't work: I guess binary-bal.rep and binary2-bal.rep. They are not causing a stack overflow or infinite loop. If you wait they will finish.
 
-Honor code:
+Honor code: I have abided by the honor code.
+
+Note: Theres a .log file with the default traces without the binary ones.
 
 # Allocator functions
 
