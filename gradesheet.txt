@@ -1,0 +1,38 @@
+CS466 Assignment 3 GradeSheet
+Grade: 88/100
+
+10/10 Embedded free list is used, pointer math in general makes sense
+
+10/10 Initialization
+* either in init or in malloc, mmap is called to get very first page
+
+30/30 Malloc works correctly:
+7/7 Uses mmap to get a new page if there isn't enough memory for a request
+8/8 Correctly splits a free block for used portion
+8/8 Correctly keeps rest of split in free list
+7/7 Keeps free list intact after splitting (don't lose part of the list)
+
+30/30 Free works correctly:
+9/9 adds block back into free list
+9/9 no loss of any of previous free list by add in
+9/9 coalesces free space
+3/3 unmaps pages when they become completely free
+- yes, but it's so inefficient, walking through the entire list, when the only possible thing to de-allocate is the newly added block!
+
+5/10 Efficiency:
+* should improve over baseline. If "first" policy is used with coalescing, should be able to read 34/100 on the standard set of traces.
+* smart decisions made on coalescing (i.e. only try to coalesce the new block with old blocks)
+- binary-bal and binary-bal2 are ridiculously slow. Those traces allocate 4000 blocks, then free them in such a way that you can't coallesce for the first half of the frees, but then you coallesce every time in the second half. Likely you are slow because it takes you awhile to realize you can't coallesce.
+- However, your efficiency on the ones that do work if I comment out the binary ones is about the same as my simple sample solution (so it's fine on those cases).
+- When commenting out your coallescing and mergesort calls in mm_free, everything ran much faster
+- When commenting out only your call to coalescing, didn't make much difference
+- When commenting out only your call to mergesort, didn'tmake much difference
+
+8/10: README contains all necessary information, good code practices followed, and comments are helpful
+* README states everything works even though code does not compile. Did you run it in the linux lab? Perhaps you are using a different compiler.
+- It's a little strange that you have functions return things, but you never actually save or use those returned values. So then why return anything?
+- Code is seriously lacking in comments
+
+Other comments:
+-5 Code does not compile on Linux lab, there are two errors in mm.c related to a switch statement, plus two other errors. Not taking off more points because it compiles on my Mac (luckily for you!!), but I shouldn't have to search for a working compiler. 
+Not entirely sure why you are using a switch statement anyway -- why don't you just put that code in the if statement that sets the variable you then use in a switch? Seems a bit redundant.
